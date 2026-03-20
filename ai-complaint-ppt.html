@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI客诉系统-需求分析与全栈交付 - Presentation</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background: linear-gradient(135deg, #0a0a2e, #1a1a4e);color:#e0e0ff;}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;background: linear-gradient(135deg, #0a0a2e, #1a1a4e);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 80px;opacity:1;transition:opacity 0.5s ease;}
+.slide.fade-out{opacity:0;}
+.slide.fade-in{opacity:0;}
+
+/* Cover styles */
+.cover-content{text-align:center;}
+.cover-badge{display:inline-block;padding:6px 24px;border:1px solid #00ff88;border-radius:20px;font-size:12px;letter-spacing:4px;color:#00ff88;margin-bottom:40px;text-transform:uppercase;}
+.cover-title{font-size:clamp(32px,5vw,64px);font-weight:700;line-height:1.2;margin-bottom:16px;letter-spacing:-1px;}
+.cover-subtitle{font-size:clamp(16px,2vw,24px);color:#8888bb;margin-bottom:30px;font-weight:300;}
+.cover-divider{width:80px;height:3px;background:#00ff88;margin:0 auto 30px;border-radius:2px;}
+.cover-date{font-size:14px;color:#8888bb;}
+.cover-hint{font-size:13px;color:#8888bb;margin-top:40px;opacity:0.6;}
+.cover-hint kbd{display:inline-block;padding:2px 8px;border:1px solid #2a2a5e;border-radius:4px;font-family:inherit;font-size:12px;}
+
+/* Slide titles */
+.slide-title{font-size:clamp(28px,3.5vw,48px);font-weight:700;margin-bottom:12px;text-align:left;width:100%;max-width:900px;}
+.slide-point{font-size:clamp(16px,1.8vw,22px);color:#00ff88;margin-bottom:36px;text-align:left;width:100%;max-width:900px;font-weight:400;}
+
+/* TOC */
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;width:100%;max-width:900px;margin-top:20px;}
+.toc-item{display:flex;align-items:center;gap:16px;padding:20px 24px;background:#12123e;border:1px solid #2a2a5e;border-radius:12px;transition:border-color 0.3s;}
+.toc-item:hover{border-color:#00ff88;}
+.toc-num{font-size:28px;font-weight:700;color:#00ff88;min-width:40px;}
+.toc-text{font-size:16px;color:#e0e0ff;}
+
+/* Content items */
+.content-items{width:100%;max-width:900px;}
+.content-item{display:flex;align-items:flex-start;gap:16px;padding:20px 24px;margin-bottom:12px;background:#12123e;border-left:3px solid #00ff88;border-radius:0 10px 10px 0;font-size:clamp(15px,1.5vw,18px);line-height:1.6;}
+.item-marker{color:#00ff88;font-size:20px;margin-top:2px;flex-shrink:0;}
+
+/* Data / Chart */
+.chart-container{width:100%;max-width:900px;margin-top:20px;}
+.bar-row{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.bar-label{min-width:120px;font-size:15px;color:#8888bb;text-align:right;}
+.bar-track{flex:1;height:36px;background:#12123e;border-radius:8px;overflow:hidden;border:1px solid #2a2a5e;}
+.bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-size:13px;font-weight:600;color:#fff;min-width:40px;transition:width 1s ease;}
+
+/* Summary */
+.summary-list{width:100%;max-width:900px;}
+.summary-item{display:flex;align-items:flex-start;gap:16px;padding:18px 24px;margin-bottom:10px;background:#12123e;border-radius:10px;border:1px solid #2a2a5e;font-size:clamp(14px,1.4vw,17px);line-height:1.6;}
+.summary-icon{color:#00ff88;font-size:18px;flex-shrink:0;margin-top:2px;}
+
+/* Thank you */
+.thankyou-title{font-size:clamp(40px,6vw,80px);font-weight:700;letter-spacing:-2px;}
+
+/* Navigation */
+.nav-area{position:fixed;top:0;width:80px;height:100%;z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;}
+.nav-area:hover{opacity:1;}
+.nav-prev{left:0;}
+.nav-next{right:0;}
+.nav-arrow{font-size:28px;color:#00ff88;background:#12123e;border:1px solid #2a2a5e;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;}
+
+/* Page indicator */
+.page-indicator{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100;}
+.dot{width:10px;height:10px;border-radius:50%;background:#2a2a5e;cursor:pointer;transition:all 0.3s;}
+.dot.active{background:#00ff88;transform:scale(1.3);}
+.page-num{position:fixed;bottom:28px;right:32px;font-size:13px;color:#8888bb;z-index:100;}
+
+/* Progress bar */
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:#00ff88;z-index:200;transition:width 0.4s ease;}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" style="width:10.0%;"></div>
+
+<div class="slide" id="slide-0" style="display:flex;">
+  <div class="cover-content">
+    <div class="cover-badge">PRESENTATION</div>
+    <h1 class="cover-title">AI客诉系统-需求分析与全栈交付</h1>
+    <p class="cover-subtitle">Professional Presentation</p>
+    <div class="cover-divider"></div>
+    <p class="cover-date">2026-03-19</p>
+    <p class="cover-hint">Press <kbd>&rarr;</kbd> to start</p>
+  </div>
+</div>
+<div class="slide" id="slide-1" style="display:none;">
+  <h2 class="slide-title">Contents</h2>
+  <div class="toc-grid">
+    <div class="toc-item"><span class="toc-num">01</span><span class="toc-text">Background & Context</span></div>
+    <div class="toc-item"><span class="toc-num">02</span><span class="toc-text">Core Analysis</span></div>
+    <div class="toc-item"><span class="toc-num">03</span><span class="toc-text">Key Insights</span></div>
+    <div class="toc-item"><span class="toc-num">04</span><span class="toc-text">Data Overview</span></div>
+    <div class="toc-item"><span class="toc-num">05</span><span class="toc-text">Implementation Strategy</span></div>
+    <div class="toc-item"><span class="toc-num">06</span><span class="toc-text">Summary & Outlook</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-2" style="display:none;">
+  <h2 class="slide-title">Background & Context</h2>
+  <p class="slide-point">Understanding the Current Landscape</p>
+  <div class="content-items">
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Industry trends and driving forces behind AI客诉系统-需求分析与全栈交付</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Key challenges and pain points in the current environment</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Opportunities for innovation and strategic growth</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-3" style="display:none;">
+  <h2 class="slide-title">Core Analysis</h2>
+  <p class="slide-point">Deep Dive into Key Factors</p>
+  <div class="content-items">
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Multi-dimensional analysis framework and methodology</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Critical success factors and risk assessment</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Comparative study with industry benchmarks</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-4" style="display:none;">
+  <h2 class="slide-title">Key Insights</h2>
+  <p class="slide-point">Findings That Matter</p>
+  <div class="content-items">
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Data-driven insights reveal significant patterns</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>User behavior and market dynamics analysis</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Competitive advantages and differentiation strategy</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-5" style="display:none;">
+  <h2 class="slide-title">Implementation Strategy</h2>
+  <p class="slide-point">From Vision to Action</p>
+  <div class="content-items">
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Phased rollout plan with clear milestones</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Resource allocation and team structure</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Risk mitigation and contingency planning</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-6" style="display:none;">
+  <h2 class="slide-title">Future Outlook</h2>
+  <p class="slide-point">Next Steps and Long-term Vision</p>
+  <div class="content-items">
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Short-term goals: Q1-Q2 execution roadmap</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Medium-term targets: scaling and optimization</span></div>
+    <div class="content-item"><span class="item-marker">&bull;</span><span>Long-term vision: sustainable growth model</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-7" style="display:none;">
+  <h2 class="slide-title">Data Overview</h2>
+  <div class="chart-container">
+    <div class="bar-row">
+      <span class="bar-label">Market Share</span>
+      <div class="bar-track"><div class="bar-fill" style="width:78%;background:#00ff88;">78%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">User Growth</span>
+      <div class="bar-track"><div class="bar-fill" style="width:92%;background:#00ccff;">92%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Revenue</span>
+      <div class="bar-track"><div class="bar-fill" style="width:65%;background:#00ff88;">65%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Satisfaction</span>
+      <div class="bar-track"><div class="bar-fill" style="width:88%;background:#00ccff;">88%</div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">Efficiency</span>
+      <div class="bar-track"><div class="bar-fill" style="width:71%;background:#00ff88;">71%</div></div>
+    </div>
+  </div>
+</div>
+<div class="slide" id="slide-8" style="display:none;">
+  <h2 class="slide-title">Summary</h2>
+  <div class="summary-list">
+    <div class="summary-item"><span class="summary-icon">&#10003;</span><span>Comprehensive analysis of AI客诉系统-需求分析与全栈交付 reveals strong potential</span></div>
+    <div class="summary-item"><span class="summary-icon">&#9733;</span><span>Data-backed strategy with clear implementation roadmap</span></div>
+    <div class="summary-item"><span class="summary-icon">&#9654;</span><span>Phased approach minimizes risk while maximizing impact</span></div>
+    <div class="summary-item"><span class="summary-icon">&#9670;</span><span>Cross-functional collaboration drives sustainable results</span></div>
+    <div class="summary-item"><span class="summary-icon">&#10148;</span><span>Next step: Kick off Phase 1 execution immediately</span></div>
+  </div>
+</div>
+<div class="slide" id="slide-9" style="display:none;">
+  <div class="cover-content">
+    <h1 class="thankyou-title">Thank You</h1>
+    <div class="cover-divider"></div>
+    <p class="cover-subtitle">Questions & Discussion</p>
+    <p class="cover-date">AI客诉系统-需求分析与全栈交付</p>
+  </div>
+</div>
+
+<div class="nav-area nav-prev" onclick="prev()"><div class="nav-arrow">&larr;</div></div>
+<div class="nav-area nav-next" onclick="next()"><div class="nav-arrow">&rarr;</div></div>
+
+<div class="page-indicator" id="dots"><span class="dot active" onclick="goTo(0)"></span> <span class="dot" onclick="goTo(1)"></span> <span class="dot" onclick="goTo(2)"></span> <span class="dot" onclick="goTo(3)"></span> <span class="dot" onclick="goTo(4)"></span> <span class="dot" onclick="goTo(5)"></span> <span class="dot" onclick="goTo(6)"></span> <span class="dot" onclick="goTo(7)"></span> <span class="dot" onclick="goTo(8)"></span> <span class="dot" onclick="goTo(9)"></span></div>
+<div class="page-num" id="pageNum">1 / 10</div>
+
+<script>
+var current=0,total=10;
+function showSlide(n){
+  if(n<0||n>=total)return;
+  var slides=document.querySelectorAll('.slide');
+  var oldSlide=slides[current];
+  var newSlide=slides[n];
+  oldSlide.style.opacity='0';
+  setTimeout(function(){
+    oldSlide.style.display='none';
+    oldSlide.style.opacity='1';
+    newSlide.style.display='flex';
+    newSlide.style.opacity='0';
+    setTimeout(function(){newSlide.style.opacity='1';},30);
+  },300);
+  current=n;
+  updateIndicators();
+}
+function next(){if(current<total-1)showSlide(current+1);}
+function prev(){if(current>0)showSlide(current-1);}
+function goTo(n){showSlide(n);}
+function updateIndicators(){
+  var dots=document.querySelectorAll('.dot');
+  for(var i=0;i<dots.length;i++){dots[i].className=i===current?'dot active':'dot';}
+  document.getElementById('pageNum').textContent=(current+1)+' / '+total;
+  document.getElementById('progressBar').style.width=((current+1)/total*100)+'%';
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();prev();}
+  else if(e.key==='Home'){e.preventDefault();showSlide(0);}
+  else if(e.key==='End'){e.preventDefault();showSlide(total-1);}
+});
+var touchStartX=0;
+document.addEventListener('touchstart',function(e){touchStartX=e.touches[0].clientX;});
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-touchStartX;
+  if(dx<-50)next();else if(dx>50)prev();
+});
+</script>
+</body>
+</html>
