@@ -1,0 +1,1221 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Electron Screenshot API (Tools)",
+    "description": "桌面工具 API：提供工作区文件读写、精准编辑、命令执行、截屏与鼠标控制；以及浏览器工具（browser_navigate、browser_snapshot、browser_screenshot、browser_act），在项目内通过 Playwright + 本机 Chrome 实现。每个能力对应独立接口，可选 Bearer 鉴权。",
+    "version": "2.0.4",
+    "x-app-version": "1.5.1"
+  },
+  "servers": [
+    {
+      "url": "http://192.168.24.26:28473",
+      "description": "API 服务器"
+    }
+  ],
+  "paths": {
+    "/tools/list": {
+      "get": {
+        "summary": "列出已注册工具",
+        "description": "返回当前可用的工具 id 列表，用于发现本机支持的桌面能力。",
+        "operationId": "listTools",
+        "tags": [
+          "Tools"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "toolIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "工具 id 列表：read, write, edit, exec, screenshot, mouse_move, mouse_click, apply_patch, browser_navigate, browser_snapshot, browser_screenshot, browser_act（后四者为项目内 Playwright 浏览器）"
+                        }
+                      }
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/execute": {
+      "post": {
+        "summary": "执行工具（统一入口）",
+        "description": "根据指定工具 id 与传入参数执行桌面操作。桌面工具：read、write、edit、exec、screenshot、mouse_move、mouse_click、apply_patch。浏览器工具（项目内 Playwright + 本机 Chrome）：browser_navigate、browser_snapshot、browser_screenshot、browser_act。",
+        "operationId": "executeTool",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/read": {
+      "post": {
+        "summary": "读取文件",
+        "description": "读取工作区内指定文件的内容，可指定行范围。",
+        "operationId": "executeTool_read",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolReadArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/write": {
+      "post": {
+        "summary": "写入文件",
+        "description": "向工作区内指定路径写入或覆盖文本内容。",
+        "operationId": "executeTool_write",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolWriteArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/edit": {
+      "post": {
+        "summary": "精准编辑文件",
+        "description": "按行范围或锚点对工作区内文件做局部修改，避免整文件重写。",
+        "operationId": "executeTool_edit",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolEditArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/exec": {
+      "post": {
+        "summary": "执行命令",
+        "description": "在本机工作区环境下执行 Shell 命令并返回输出。",
+        "operationId": "executeTool_exec",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolExecArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/screenshot": {
+      "post": {
+        "summary": "截屏",
+        "description": "捕获当前屏幕或指定显示器的画面并返回图片。",
+        "operationId": "executeTool_screenshot",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolScreenshotArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/mouse_move": {
+      "post": {
+        "summary": "移动鼠标",
+        "description": "将鼠标光标移动到指定坐标。",
+        "operationId": "executeTool_mouse_move",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolMouseMoveArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/mouse_click": {
+      "post": {
+        "summary": "点击鼠标",
+        "description": "在指定坐标执行鼠标单击或双击。",
+        "operationId": "executeTool_mouse_click",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolMouseClickArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/apply_patch": {
+      "post": {
+        "summary": "应用补丁",
+        "description": "根据补丁文本批量修改工作区内的文件（含 *** Begin Patch / *** End Patch 格式）。",
+        "operationId": "executeTool_apply_patch",
+        "tags": [
+          "Tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolApplyPatchArguments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "description": "工具返回结果，依 toolId 不同而不同"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数错误或执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "无权限",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "未知 toolId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "执行异常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/browser_navigate": {
+      "post": {
+        "summary": "外部浏览器：导航",
+        "description": "在外部 Chrome 中加载 URL。",
+        "operationId": "executeTool_browser_navigate",
+        "tags": ["Tools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ToolBrowserNavigateArguments" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "执行成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": {}, "code": { "type": "integer", "example": 200 }, "message": { "type": "string" }, "success": { "type": "boolean", "example": true } } } } } },
+          "400": { "description": "参数错误或执行失败", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "未知 toolId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "执行异常", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/tools/browser_snapshot": {
+      "post": {
+        "summary": "外部浏览器：页面快照",
+        "description": "获取外部浏览器当前页面的可访问性/AI 快照（通过 arguments 传递 query 等价参数）。",
+        "operationId": "executeTool_browser_snapshot",
+        "tags": ["Tools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ToolBrowserSnapshotArguments" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "执行成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": {}, "code": { "type": "integer", "example": 200 }, "message": { "type": "string" }, "success": { "type": "boolean", "example": true } } } } } },
+          "400": { "description": "参数错误或执行失败", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "未知 toolId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "执行异常", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/tools/browser_screenshot": {
+      "post": {
+        "summary": "外部浏览器：页面截图",
+        "description": "对外部浏览器当前页面截图。",
+        "operationId": "executeTool_browser_screenshot",
+        "tags": ["Tools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ToolBrowserScreenshotArguments" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "执行成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": {}, "code": { "type": "integer", "example": 200 }, "message": { "type": "string" }, "success": { "type": "boolean", "example": true } } } } } },
+          "400": { "description": "参数错误或执行失败", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "未知 toolId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "执行异常", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/tools/browser_act": {
+      "post": {
+        "summary": "外部浏览器：页面操作",
+        "description": "在外部浏览器页面上执行 click、type、fill、press、hover 等操作。",
+        "operationId": "executeTool_browser_act",
+        "tags": ["Tools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ToolBrowserActArguments" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "执行成功", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": {}, "code": { "type": "integer", "example": 200 }, "message": { "type": "string" }, "success": { "type": "boolean", "example": true } } } } } },
+          "400": { "description": "参数错误或执行失败", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "未知 toolId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "执行异常", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ToolExecuteRequest": {
+        "type": "object",
+        "required": [
+          "toolId"
+        ],
+        "description": "统一入口请求。传递方式：POST /tools/execute，Content-Type: application/json，请求体为 JSON：{ \"toolId\": \"read\"|\"write\"|\"edit\"|... , \"arguments\": { ... } }。arguments 内字段与各工具 schema（ToolReadArguments、ToolWriteArguments 等）一致。",
+        "properties": {
+          "toolId": {
+            "type": "string",
+            "description": "必填。要执行的工具 id：read、write、edit、exec、screenshot、mouse_move、mouse_click、apply_patch、browser_navigate、browser_snapshot、browser_screenshot、browser_act 之一。"
+          },
+          "arguments": {
+            "type": "object",
+            "description": "必填。本次调用该工具的参数对象，字段随 toolId 不同而不同，参见对应 Tool*Arguments schema（如 edit 对应 path、edits、strict 等）。"
+          }
+        }
+      },
+      "ToolReadArguments": {
+        "type": "object",
+        "description": "读文件时传入的参数。传递方式：POST /tools/read，Content-Type: application/json，请求体为 JSON 对象。必填：path。",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "必填。要读取的文件路径，相对于工作区根目录（如 src/foo.ts）。不要使用绝对路径或含 .. 的路径。"
+          },
+          "startLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "可选。仅读取从该行开始的内容，行号从 1 起。不传则从文件开头读。"
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "可选。仅读取到该行为止（含），行号从 1 起。需与 startLine 同时使用才生效；不传则读到文件末尾。"
+          }
+        }
+      },
+      "ToolWriteArguments": {
+        "type": "object",
+        "description": "写文件时传入的参数。传递方式：POST /tools/write，Content-Type: application/json，请求体为 JSON 对象。必填：path、content。",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "必填。要写入的文件路径，相对于工作区根目录（如 src/foo.ts）。不要使用绝对路径或含 .. 的路径。"
+          },
+          "content": {
+            "type": "string",
+            "description": "必填。要写入的完整文件内容（字符串）。"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8",
+            "description": "可选，默认 utf-8。文件写入使用的编码（如 utf-8、gbk）。"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "可选，默认 false。为 true 时若文件已存在则覆盖；为 false 时已存在则返回错误。"
+          },
+          "createParentDirs": {
+            "type": "boolean",
+            "default": true,
+            "description": "可选，默认 true。为 true 时自动创建路径中不存在的父目录。"
+          },
+          "baseHash": {
+            "type": "string",
+            "description": "可选。乐观锁：仅当文件当前内容的 hash 等于此值时才写入，否则返回 409。用于并发场景避免覆盖他人修改。"
+          }
+        }
+      },
+      "ToolEditArguments": {
+        "type": "object",
+        "description": "精准编辑文件时传入的参数。传递方式：POST /tools/edit，Content-Type: application/json，请求体为 JSON 对象，各字段按 key 传入。必填：path、edits。",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "必填。要编辑的文件路径，相对于工作区根目录（如 src/foo.ts）。不要使用绝对路径或含 .. 的路径。"
+          },
+          "edits": {
+            "type": "array",
+            "description": "必填。编辑列表，推荐在请求体中直接传数组（不要传字符串）。若传字符串则须为合法 JSON 数组，否则返回 400。每项格式：range 型 { \"type\": \"range\", \"startLine\": 1, \"endLine\": 1, \"newText\": \"内容\" }（行号从 1 起）；anchor 型 { \"type\": \"anchor\", \"oldText\": \"旧内容\", \"newText\": \"新内容\" }。newText 内双引号需转义为 \\\"。"
+          },
+          "strict": {
+            "type": "boolean",
+            "default": true,
+            "description": "可选，默认 true。为 true 时编辑匹配失败或格式错误会直接报错；为 false 时部分项可被忽略。"
+          },
+          "baseHash": {
+            "type": "string",
+            "description": "可选。乐观锁：仅当文件当前内容的 hash 等于此值时才执行编辑，否则返回 409。用于并发场景避免覆盖他人修改。"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8",
+            "description": "可选，默认 utf-8。文件读写使用的编码（如 utf-8、gbk）。"
+          }
+        }
+      },
+      "ToolExecArguments": {
+        "type": "object",
+        "description": "执行命令时传入的参数。传递方式：POST /tools/exec，Content-Type: application/json，请求体为 JSON 对象。必填：command。",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "必填。要在本机工作区环境下执行的 Shell 命令（如 npm run build、ls -la）。"
+          },
+          "workdir": {
+            "type": "string",
+            "description": "可选。命令的工作目录，相对于工作区根目录；不传则使用工作区根目录。"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "可选。命令超时时间，单位毫秒。超时未结束会终止并返回错误。"
+          }
+        }
+      },
+      "ToolScreenshotArguments": {
+        "type": "object",
+        "description": "截屏时传入的参数。传递方式：POST /tools/screenshot，Content-Type: application/json，请求体为 JSON 对象。所有参数均可选，空对象即截取主屏。",
+        "properties": {
+          "displayId": {
+            "type": "integer",
+            "description": "可选。指定要截取的显示器 ID（多屏时有效）；不传则截取主显示器。"
+          }
+        }
+      },
+      "ToolMouseMoveArguments": {
+        "type": "object",
+        "description": "移动鼠标时传入的参数。传递方式：POST /tools/mouse_move，Content-Type: application/json，请求体为 JSON 对象。必填：x、y。",
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "必填。目标 X 坐标（像素），相对于指定显示器的左上角。"
+          },
+          "y": {
+            "type": "number",
+            "description": "必填。目标 Y 坐标（像素），相对于指定显示器的左上角。"
+          },
+          "smooth": {
+            "type": "boolean",
+            "default": false,
+            "description": "可选，默认 false。为 true 时平滑移动；为 false 时瞬间移动。"
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "可选。目标显示器 ID（多屏时有效）；不传则使用主显示器坐标系。"
+          }
+        }
+      },
+      "ToolMouseClickArguments": {
+        "type": "object",
+        "description": "鼠标点击时传入的参数。传递方式：POST /tools/mouse_click，Content-Type: application/json，请求体为 JSON 对象。必填：x、y。",
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "必填。点击位置 X 坐标（像素），相对于指定显示器的左上角。"
+          },
+          "y": {
+            "type": "number",
+            "description": "必填。点击位置 Y 坐标（像素），相对于指定显示器的左上角。"
+          },
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "default": "left",
+            "description": "可选，默认 left。点击的按键：left 左键，right 右键。"
+          },
+          "double": {
+            "type": "boolean",
+            "default": false,
+            "description": "可选，默认 false。为 true 时执行双击。"
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "可选。目标显示器 ID（多屏时有效）；不传则使用主显示器坐标系。"
+          }
+        }
+      },
+      "ToolApplyPatchArguments": {
+        "type": "object",
+        "description": "应用多文件补丁时传入的参数。传递方式：POST /tools/apply_patch，Content-Type: application/json，请求体为 JSON 对象。必填：input。补丁格式需包含 *** Begin Patch 与 *** End Patch 标记。",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "必填。Patch 全文（字符串），须包含 *** Begin Patch 与 *** End Patch 标记，中间为 *** Add File / *** Update File / *** Delete File 等操作块。"
+          }
+        }
+      },
+      "ToolBrowserNavigateArguments": {
+        "type": "object",
+        "description": "外部浏览器导航。",
+        "properties": {
+          "url": { "type": "string", "description": "必填。要加载的 URL。" },
+          "targetId": { "type": "string", "description": "可选。目标 tab 标识。" },
+          "profile": { "type": "string", "description": "可选。浏览器 profile 名。" }
+        }
+      },
+      "ToolBrowserSnapshotArguments": {
+        "type": "object",
+        "description": "外部浏览器页面快照。",
+        "properties": {
+          "targetId": { "type": "string", "description": "可选。目标 tab 标识。" },
+          "format": { "type": "string", "enum": ["aria", "ai"], "description": "可选。快照格式：aria 或 ai。" },
+          "mode": { "type": "string", "enum": ["efficient"], "description": "可选。efficient 时使用 AI 格式并压缩。" },
+          "maxChars": { "type": "integer", "description": "可选。AI 格式最大字符数。" },
+          "profile": { "type": "string", "description": "可选。浏览器 profile 名。" }
+        }
+      },
+      "ToolBrowserScreenshotArguments": {
+        "type": "object",
+        "description": "外部浏览器页面截图。",
+        "properties": {
+          "targetId": { "type": "string", "description": "可选。目标 tab 标识。" },
+          "fullPage": { "type": "boolean", "default": false, "description": "是否整页截图。" },
+          "ref": { "type": "string", "description": "可选。按 role ref 截取元素。" },
+          "element": { "type": "string", "description": "可选。按选择器截取元素。" },
+          "type": { "type": "string", "enum": ["png", "jpeg"], "default": "png", "description": "图片格式。" },
+          "profile": { "type": "string", "description": "可选。浏览器 profile 名。" }
+        }
+      },
+      "ToolBrowserActArguments": {
+        "type": "object",
+        "description": "外部浏览器页面操作（kind + ref/参数依 kind 不同）。",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["click", "close", "drag", "evaluate", "fill", "hover", "scrollIntoView", "press", "resize", "select", "type", "wait"],
+            "description": "必填。操作类型。"
+          },
+          "targetId": { "type": "string", "description": "可选。目标 tab 标识。" },
+          "ref": { "type": "string", "description": "role/aria ref；click、type、hover、fill 等时必填。" },
+          "text": { "type": "string", "description": "type 时必填。" },
+          "key": { "type": "string", "description": "press 时必填。" },
+          "value": { "type": "string", "description": "fill、select 时使用。" },
+          "button": { "type": "string", "enum": ["left", "right", "middle"], "description": "click 时按键。" },
+          "doubleClick": { "type": "boolean", "description": "click 时是否双击。" },
+          "modifiers": { "type": "array", "items": { "type": "string", "enum": ["Alt", "Control", "ControlOrMeta", "Meta", "Shift"] }, "description": "click 时修饰键。" },
+          "submit": { "type": "boolean", "description": "type 时是否提交。" },
+          "slowly": { "type": "boolean", "description": "type 时是否逐字输入。" },
+          "timeoutMs": { "type": "integer", "description": "超时毫秒。" },
+          "delayMs": { "type": "integer", "description": "press 时按键延迟。" },
+          "profile": { "type": "string", "description": "可选。浏览器 profile 名。" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息"
+          },
+          "success": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Tools",
+      "description": "桌面工具接口"
+    }
+  ]
+}

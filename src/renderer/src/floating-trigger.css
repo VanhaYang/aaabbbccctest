@@ -1,0 +1,375 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent; /* 完全透明背景，确保窗口背景透明 */
+}
+
+.floating-trigger {
+  width: 56px;
+  height: 56px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 主按钮 */
+.trigger-button {
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  /* border-radius: 10px; */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); */
+  position: relative;
+  overflow: hidden;
+}
+
+.trigger-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.4);
+}
+
+.trigger-button:active {
+  transform: scale(0.98);
+}
+
+.floating-trigger.active .trigger-button {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 8px 28px rgba(118, 75, 162, 0.4);
+}
+
+/* 拖拽手柄 */
+.drag-handle {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+  -webkit-app-region: drag;
+  z-index: 10;
+}
+
+.drag-handle:hover {
+  transform: scale(1.15) translateY(-1px);
+  box-shadow: 0 4px 16px rgba(118, 75, 162, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, #8b7bc0 0%, #9d8ec8 100%);
+  animation: dragHandleHover 0.8s ease-in-out infinite;
+  cursor: grab;
+}
+
+.drag-handle:active {
+  transform: scale(1.1) translateY(0);
+  cursor: grabbing;
+  animation: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+/* 拖拽手柄脉冲动画 - 提示可拖拽 */
+@keyframes dragHandlePulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.3);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 3px 12px rgba(118, 75, 162, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+/* 悬停时的动画 - 更明显的提示（上下浮动） */
+@keyframes dragHandleHover {
+  0%,
+  100% {
+    transform: scale(1.15) translateY(-1px);
+  }
+  50% {
+    transform: scale(1.15) translateY(-3px);
+  }
+}
+
+.trigger-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+  transform: translateY(0) rotate(0deg);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.trigger-button:hover .trigger-icon {
+  animation: none;
+}
+
+/* 拖拽文件时的样式 */
+.floating-trigger.dragging .trigger-button {
+  transform: scale(1.15);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.9);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  animation: dragPulse 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 文件上传中的样式 - 优先级高于拖拽状态 */
+.floating-trigger.uploading .trigger-button,
+.floating-trigger.uploading.dragging .trigger-button {
+  animation: uploadBreath 1.5s ease-in-out infinite !important;
+}
+
+/* 上传呼吸动画 - 柔和的缩放和阴影变化 */
+@keyframes uploadBreath {
+  0%,
+  100% {
+    transform: scale(1.15);
+    box-shadow: 0 12px 40px rgba(72, 187, 120, 0.8);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 16px 50px rgba(72, 187, 120, 1);
+  }
+}
+
+/* 绿色背景层 - 从下往上填充 */
+.trigger-button::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  transform: translateY(100%);
+  z-index: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+/* 拖拽时背景从下往上移入 */
+.floating-trigger.dragging .trigger-button::before {
+  opacity: 1;
+  animation: slideUpIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* 非拖拽状态时隐藏背景层 */
+.floating-trigger:not(.dragging) .trigger-button::before {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+/* 背景从下往上移入动画 */
+@keyframes slideUpIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 拖拽时的脉冲动画 */
+@keyframes dragPulse {
+  0%,
+  100% {
+    transform: scale(1.15);
+    box-shadow: 0 12px 40px rgba(72, 187, 120, 0.9);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 15px 50px rgba(72, 187, 120, 1);
+  }
+}
+
+/* 拖拽提示文字 */
+.drag-hint {
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 100;
+  animation: fadeInUp 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.drag-hint::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid rgba(0, 0, 0, 0.8);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 拖拽时图标动画 - 从下往上滚动式入场 */
+.floating-trigger.dragging .trigger-icon {
+  animation: iconRollIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+    iconBounce 0.6s ease-in-out 0.4s infinite;
+}
+
+/* 上传中图标动画 - 保持图标不变，只使用轻微的呼吸效果 */
+.floating-trigger.uploading .trigger-icon,
+.floating-trigger.uploading.dragging .trigger-icon {
+  animation: iconUploadBreath 1.5s ease-in-out infinite !important;
+}
+
+/* 图标上传呼吸动画 - 轻微的透明度变化 */
+@keyframes iconUploadBreath {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateY(0) scale(1.05);
+  }
+}
+
+/* 非拖拽状态时恢复默认动画 */
+.floating-trigger:not(.dragging) .trigger-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* 图标从下往上滚动入场 */
+@keyframes iconRollIn {
+  from {
+    transform: translateY(100%) rotate(0deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* 确保非拖拽状态时图标在正确位置 */
+.floating-trigger:not(.dragging) .trigger-icon {
+  transform: translateY(0) rotate(0deg);
+  opacity: 1;
+}
+
+/* 图标弹跳动画（入场后） */
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(0deg);
+  }
+}
+
+/* 图标重置动画 - 确保动画结束后恢复默认状态 */
+@keyframes iconReset {
+  to {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* 文件上传计数角标 - 左下角 */
+.upload-badge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  transition: all 0.2s ease;
+  z-index: 20;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+.upload-badge:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.7);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.upload-badge:active {
+  transform: scale(1.05);
+}
+
+.upload-badge-count {
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 角标脉冲动画 */
+@keyframes badgePulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.75);
+  }
+}

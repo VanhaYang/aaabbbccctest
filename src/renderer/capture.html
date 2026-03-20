@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>截图</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: crosshair;
+      background: transparent; /* 透明背景 */
+      /* 禁用窗口拖拽，允许正常的鼠标事件处理（覆盖 index.css 的 drag 设置） */
+      -webkit-app-region: no-drag;
+    }
+
+    #root {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/capture.tsx"></script>
+</body>
+</html>
+

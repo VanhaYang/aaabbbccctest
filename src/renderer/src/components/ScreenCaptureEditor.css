@@ -1,0 +1,280 @@
+.screen-capture {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  /* 禁用窗口拖拽，允许正常的鼠标事件处理 */
+  -webkit-app-region: no-drag;
+}
+
+.capture-area {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: crosshair;
+  /* 确保可以接收鼠标事件 */
+  -webkit-app-region: no-drag;
+}
+
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  user-select: none;
+  pointer-events: none; /* 允许鼠标事件穿透图片 */
+}
+
+/* CSS 遮罩层（替代 Canvas 遮罩，性能更好） */
+.css-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  pointer-events: none; /* 允许鼠标事件穿透遮罩层 */
+  /* 使用 clip-path 创建遮罩效果，选区区域透明 */
+}
+
+.overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none; /* 允许鼠标事件穿透 canvas */
+}
+
+.draw-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none; /* 允许鼠标事件穿透 canvas */
+}
+
+.selection-info {
+  position: absolute;
+  z-index: 4;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+/* 基础工具栏 */
+.toolbar {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toolbar-btn {
+  padding: 6px 12px;
+  background: #00a8ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+  background: #0096e6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 168, 255, 0.3);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+}
+
+.toolbar-btn.edit {
+  background: #27ae60;
+}
+
+.toolbar-btn.edit:hover {
+  background: #229954;
+  box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);
+}
+
+.toolbar-btn.cancel {
+  background: #e74c3c;
+}
+
+.toolbar-btn.cancel:hover {
+  background: #c0392b;
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+}
+
+/* 编辑工具栏 */
+.edit-toolbar {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.tool-group,
+.color-group,
+.linewidth-group,
+.action-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 8px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.action-group {
+  border-right: none;
+}
+
+.tool-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: #e0e0e0;
+}
+
+.tool-btn.active {
+  background: #00a8ff;
+  border-color: #0096e6;
+  transform: scale(1.05);
+}
+
+.color-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+}
+
+.color-btn.active {
+  border-color: #00a8ff;
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 168, 255, 0.5);
+}
+
+.linewidth-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.linewidth-btn:hover {
+  background: #e0e0e0;
+}
+
+.linewidth-btn.active {
+  background: #d0d0d0;
+  border-color: #00a8ff;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #00a8ff;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.action-btn.cancel {
+  background: #e74c3c;
+  color: white;
+}
+
+.action-btn.cancel:hover {
+  background: #c0392b;
+}
+
+/* 提示信息 */
+.hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  text-align: center;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hint p {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.hint .hint-small {
+  font-size: 16px;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* 选择状态时的光标 */
+.capture-area.selecting {
+  cursor: crosshair;
+}

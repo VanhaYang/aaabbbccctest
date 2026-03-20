@@ -1,0 +1,84 @@
+{
+  "appId": "com.electron.screenshot",
+  "productName": "Electron Screenshot",
+  "directories": {
+    "buildResources": "build",
+    "output": "release"
+  },
+  "files": [
+    "out",
+    "package.json",
+    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+    "!**/node_modules/*.d.ts",
+    "!**/node_modules/.bin",
+    "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+    "!.editorconfig",
+    "!**/._*",
+    "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+    "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+    "!**/{appveyor.yml,.travis.yml,circle.yml}",
+    "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+  ],
+  "asarUnpack": [
+    "**/node_modules/@nut-tree/**/*",
+    "**/node_modules/@nut-tree/nut-js/**/*",
+    "**/node_modules/@nut-tree/shared/**/*"
+  ],
+  "npmRebuild": false,
+  "nodeGypRebuild": false,
+  "extraResources": [
+    {
+      "from": "resources",
+      "to": ".",
+      "filter": [
+        "**/*"
+      ]
+    }
+  ],
+  "win": {
+    "icon": "resources/app/icons/icon-512x512.png",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "Electron-Screenshot-${version}-Setup.${ext}",
+    "sign": null,
+    "requestedExecutionLevel": "asInvoker"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  },
+  "squirrelWindows": {
+    "iconUrl": "https://test-aizs.sailvan.com/release/icon.ico",
+    "loadingGif": null,
+    "msi": false,
+    "remoteReleases": null,
+    "remoteToken": null
+  },
+  "mac": {
+    "icon": "resources/app/icons/icon-512x512.png",
+    "target": [
+      "dmg"
+    ],
+    "category": "public.app-category.utilities"
+  },
+  "linux": {
+    "icon": "resources/app/icons/icon-512x512.png",
+    "target": [
+      "tar.gz"
+    ],
+    "category": "Utility"
+  },
+  "publish": {
+    "provider": "generic",
+    "url": "https://test-aizs.sailvan.com/release/"
+  }
+}

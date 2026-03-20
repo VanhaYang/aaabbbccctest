@@ -1,0 +1,2209 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Electron Screenshot API",
+    "description": "Electron Screenshot 应用的 HTTP API。提供截图捕获、鼠标控制、工作区文件访问和终端执行功能。",
+    "version": "2.0.4",
+    "x-app-version": "1.5.1"
+  },
+  "servers": [
+    {
+      "url": "http://192.168.24.66:28473",
+      "description": "API 服务器"
+    }
+  ],
+  "paths": {
+    "/displays": {
+      "get": {
+        "summary": "获取显示器列表",
+        "description": "获取所有显示器的信息。返回的 id 可作为其他接口中的 displayId 使用。",
+        "operationId": "getDisplays",
+        "tags": [
+          "Display"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取显示器列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DisplayInfo"
+                      }
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/screenshot": {
+      "get": {
+        "summary": "获取截图",
+        "description": "捕获屏幕截图并返回 PNG。未传 displayId 时默认主显示器；displayId 无效时会回退到默认显示器。",
+        "operationId": "getScreenshot",
+        "tags": [
+          "Screenshot"
+        ],
+        "parameters": [
+          {
+            "name": "displayId",
+            "in": "query",
+            "description": "要捕获的显示器 ID（可选）。未传或无效时，回退为主显示器。",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功捕获截图",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "截图捕获失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/position": {
+      "get": {
+        "summary": "Get mouse position",
+        "description": "获取当前鼠标位置（全局坐标）。",
+        "operationId": "getMousePosition",
+        "tags": [
+          "Mouse"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取鼠标位置",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MousePosition"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/move": {
+      "post": {
+        "summary": "Move mouse",
+        "description": "将鼠标移动到指定位置。x/y 必须为数字；若传 displayId，则 x/y 为该显示器内相对坐标。",
+        "operationId": "moveMouse",
+        "tags": [
+          "Mouse"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveMouseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功移动鼠标",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MousePosition"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/click": {
+      "post": {
+        "summary": "点击鼠标",
+        "description": "在指定位置点击鼠标。未传 x/y 时使用当前鼠标位置；button 仅支持 left/right/middle；double 为 true 时执行双击。",
+        "operationId": "clickMouse",
+        "tags": [
+          "Mouse"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClickMouseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功点击鼠标",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/drag": {
+      "post": {
+        "summary": "拖动鼠标",
+        "description": "从起始位置拖动鼠标到结束位置。startX/startY/endX/endY 必填；duration 为毫秒，0 表示直接移动。",
+        "operationId": "dragMouse",
+        "tags": [
+          "Mouse"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DragMouseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功拖动鼠标",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/scroll": {
+      "post": {
+        "summary": "滚动鼠标",
+        "description": "在指定位置滚动鼠标。direction 仅支持 up/down；amount 为滚动量（整数）。",
+        "operationId": "scrollMouse",
+        "tags": [
+          "Mouse"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScrollMouseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功滚动鼠标",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mouse/pixel": {
+      "get": {
+        "summary": "获取像素颜色",
+        "description": "获取指定位置的像素颜色。若传 displayId，则 x/y 为该显示器内相对坐标。",
+        "operationId": "getPixelColor",
+        "tags": [
+          "Mouse"
+        ],
+        "parameters": [
+          {
+            "name": "x",
+            "in": "query",
+            "description": "X 坐标（必填）。若传 displayId，则为该显示器内相对坐标。",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "y",
+            "in": "query",
+            "description": "Y 坐标（必填）。若传 displayId，则为该显示器内相对坐标。",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "displayId",
+            "in": "query",
+            "description": "显示器 ID（可选）。指定后坐标为该显示器内相对坐标；无效值会返回 400。",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取像素颜色",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "integer"
+                        },
+                        "y": {
+                          "type": "integer"
+                        },
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$",
+                          "example": "#FF0000"
+                        }
+                      }
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/screen/size": {
+      "get": {
+        "summary": "获取屏幕尺寸",
+        "description": "获取当前屏幕尺寸（主屏幕）。",
+        "operationId": "getScreenSize",
+        "tags": [
+          "Screen"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取屏幕尺寸",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "width": {
+                          "type": "integer",
+                          "example": 1920
+                        },
+                        "height": {
+                          "type": "integer",
+                          "example": 1080
+                        }
+                      }
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terminal/execute": {
+      "post": {
+        "summary": "执行终端命令",
+        "description": "执行 Shell 命令并返回结果。command 必须为非空字符串；同一时刻仅允许一个命令执行。cd 语法支持更新内部 cwd：仅对简单链式生效（cd <path>，或 cd <path> && <cmd> / cd <path> ; <cmd>，可连续多段 cd）。一旦命令包含 || 或括号 () 等复杂语法，将交由 shell 执行，但内部 cwd 不会更新。管道 | 和其他 shell 语法会按系统 shell 处理，但不会改变内部 cwd。示例（会更新 cwd）：\"cd src\"、\"cd src && dir\"、\"cd src; cd ..; dir\"。示例（不会更新 cwd）：\"cd src || dir\"、\"(cd src && dir)\"、\"cd src | findstr foo\"。",
+        "operationId": "executeTerminalCommand",
+        "tags": [
+          "Terminal"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "可选，Bearer Token",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TerminalExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功执行命令",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerminalExecuteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误或命令执行失败。响应 data 中会包含 cwd（当前 shell 工作目录）与 workspacePath（工作区根目录），便于 AI 排查目录问题。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerminalExecuteErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "终端执行失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terminal/kill": {
+      "post": {
+        "summary": "中断终端命令",
+        "description": "中断当前正在执行的命令。即使当前没有运行中的命令，也会返回成功状态。示例：在长时间运行命令期间调用可终止进程；若无运行命令则仅返回 success。",
+        "operationId": "killTerminalCommand",
+        "tags": [
+          "Terminal"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "可选，Bearer Token",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功中断命令",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "中断命令失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terminal/session": {
+      "get": {
+        "summary": "获取终端会话信息",
+        "description": "获取终端会话状态（cwd、是否运行中、历史记录）。会话基于工作区路径初始化；未配置工作区时返回 400。示例：先调用 /terminal/execute 执行命令，再调用本接口可查看最新 cwd 与 history。",
+        "operationId": "getTerminalSession",
+        "tags": [
+          "Terminal"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "可选，Bearer Token",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取会话信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerminalSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "终端初始化失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/files": {
+      "get": {
+        "summary": "获取工作区文件列表",
+        "description": "获取工作区目录中的文件列表。**重要：这是 GET 请求，参数必须作为 URL query 参数传递（如：`/workspace/files?path=src&recursive=true`），不要传递 JSON body。** path 必须相对工作区根目录，禁止包含 ..；目标必须是目录，否则返回 400；默认跳过以 '.' 开头的隐藏文件。**省 token 建议（AI 调用）：format=tree 或 format=treeText 时递归最多 200 条；format=list 时最多 30 条。可使用 maxDepth 限制递归深度。**",
+        "operationId": "getWorkspaceFiles",
+        "tags": [
+          "Workspace"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "相对于工作区根目录的子路径（可选）。禁止包含 ..。不传则使用工作区根目录。",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "description": "是否递归列出子目录。仅当值为字符串 \"true\" 时启用。",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "响应格式，省 token 时建议用 treeText。list：扁平列表（默认）；tree：嵌套 JSON 树；treeText：单段树形文本，路径不重复，最省 token。",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "list",
+                "tree",
+                "treeText"
+              ],
+              "default": "list"
+            }
+          },
+          {
+            "name": "compact",
+            "in": "query",
+            "description": "仅当 format=list 时有效。为 true 时使用短键名：n(name)、r(relativePath)、d(isDirectory)、s(size)、t(modifiedTime)。",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "includeMeta",
+            "in": "query",
+            "description": "仅当 format=list 时有效。为 true 时在列表中包含 size、modifiedTime，否则省略以省 token。",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "maxDepth",
+            "in": "query",
+            "description": "递归时的最大深度（正整数）。例如 1 表示仅当前层，2 表示当前层+一层子目录。不传则不限制。",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取文件列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WorkspaceFilesResponse"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误（未配置工作区、路径无效、或递归结果超过条数限制：list 30 条，tree/treeText 200 条）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问（路径不在工作区内或无读取权限）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "目录未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/file": {
+      "get": {
+        "summary": "读取工作区文件",
+        "description": "从工作区读取文件内容。path 可为绝对路径或相对工作区路径；相对路径禁止包含 ..；目标必须是文件，目录会返回 400。文本文件最大 10MB，媒体文件最大 50MB。可选 startLine/endLine 读取文本文件的局部内容。",
+        "operationId": "readWorkspaceFile",
+        "tags": [
+          "Workspace"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "文件路径（绝对路径或相对于工作区根目录的路径）。相对路径禁止包含 ..；以 / 或 \\ 开头但非盘符/UNC 的路径会视为工作区相对路径。",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startLine",
+            "in": "query",
+            "description": "可选。起始行号（从 1 开始）。与 endLine 一起使用，用于读取文本文件的局部内容。",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "endLine",
+            "in": "query",
+            "description": "可选。结束行号（从 1 开始，且 >= startLine）。与 startLine 一起使用，用于读取文本文件的局部内容。",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功读取文件",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/TextFileResponse"
+                        },
+                        {
+                          "$ref": "#/components/schemas/MediaFileResponse"
+                        }
+                      ]
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误（未配置工作区、路径无效或文件过大）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问（文件不在工作区内或无读取权限）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "文件未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/search": {
+      "post": {
+        "summary": "搜索工作区文件（ripgrep）",
+        "description": "在工作区内执行 ripgrep 搜索（仅正则匹配）。path 可指向工作区内的文件或目录；若为文件则仅搜索该文件。默认 noIgnore 为 true（传 --no-ignore），不遵守 .gitignore，与常见编辑器不启用忽略文件时的搜索行为一致；传 noIgnore: false 则遵守忽略规则。结果以逐行匹配为主，包含文件路径、行号、行内容与子匹配偏移。可指定文件过滤、上下文行数与最大匹配条数。**注意：** `caseSensitive: false` 仅影响字母大小写（如 `NODE_TYPE` 可匹配 `node_type`），但不会匹配不同命名风格（如 `nodeTypes` 不会匹配 `node_type`）。如需匹配多种命名风格，请在 pattern 中使用 `|` 包含所有变体。",
+        "operationId": "searchWorkspace",
+        "tags": [
+          "Workspace"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceSearchRequest"
+              },
+              "examples": {
+                "regexSearch": {
+                  "summary": "正则搜索 TypeScript 文件",
+                  "value": {
+                    "pattern": "export\\s+class",
+                    "path": "project/src",
+                    "type": [
+                      "ts",
+                      "tsx"
+                    ],
+                    "caseSensitive": true,
+                    "contextLines": 0,
+                    "maxResults": 200
+                  }
+                },
+                "namingStyleSearch": {
+                  "summary": "匹配多种命名风格（下划线 vs 驼峰）",
+                  "description": "示例：搜索 node_type 相关的所有命名风格变体",
+                  "value": {
+                    "pattern": "node_type|nodeType|NODE_TYPE|nodeTypes|NodeType",
+                    "path": "",
+                    "caseSensitive": false,
+                    "contextLines": 0,
+                    "maxResults": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回搜索结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/WorkspaceSearchResponse"
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误（未配置工作区、pattern 为空或参数无效）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问（路径不在工作区内或无读取权限）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "路径未找到",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "搜索执行失败（ripgrep 出错或超时）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/write": {
+      "post": {
+        "summary": "写入工作区文件",
+        "description": "在工作区内创建或覆盖文本文件。默认使用原子写入；仅支持文本内容（最大 10MB）。",
+        "operationId": "writeWorkspaceFile",
+        "tags": [
+          "Workspace"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功写入文件",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceWriteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误（参数无效、文件已存在或文件过大）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问（路径不在工作区内或无写权限）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "冲突（baseHash 不匹配）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "写入失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/edits": {
+      "post": {
+        "summary": "精准编辑工作区文件",
+        "description": "基于 range/anchor 规则对文本文件进行精准修改，默认 strict 模式。",
+        "operationId": "editWorkspaceFile",
+        "tags": [
+          "Workspace"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceEditsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功编辑文件",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceWriteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求错误（参数无效或编辑匹配失败）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "禁止访问（路径不在工作区内或无写权限）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "文件不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "冲突（baseHash 不匹配）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "编辑失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/list": {
+      "get": {
+        "summary": "列出已注册工具",
+        "description": "返回工具层已注册的 toolId 列表，便于决策端发现能力。与 OpenClaw 工具层约定对齐，决策端可复用同一套工具描述调用桌面执行。",
+        "operationId": "listTools",
+        "tags": ["Tools"],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "toolIds": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "description": "工具 id 列表：read, write, edit, exec, screenshot, mouse_move, mouse_click, apply_patch"
+                        }
+                      }
+                    },
+                    "code": { "type": "integer", "example": 200 },
+                    "message": { "type": "string" },
+                    "success": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/execute": {
+      "post": {
+        "summary": "执行工具（统一入口）",
+        "description": "按 toolId 与 arguments 执行桌面工具，与 OpenClaw tool-catalog 的 id/参数约定对齐，便于决策端同一套工具描述既可调 OpenClaw 也可调本机。参数 schema 见 components/schemas/ToolExecuteRequest 及各工具说明。",
+        "operationId": "executeTool",
+        "tags": ["Tools"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "description": "工具返回结果，依 toolId 不同而不同" },
+                    "code": { "type": "integer", "example": 200 },
+                    "message": { "type": "string" },
+                    "success": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "参数错误或执行失败", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "无权限", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "未知 toolId", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "执行异常", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StandardResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "description": "错误消息"
+          },
+          "success": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "ToolExecuteRequest": {
+        "type": "object",
+        "required": ["toolId"],
+        "description": "与 OpenClaw tool-catalog 约定对齐：toolId 与 arguments 与 OpenClaw 同名工具一致，便于决策端复用 schema",
+        "properties": {
+          "toolId": {
+            "type": "string",
+            "description": "工具 id：read | write | edit | exec | screenshot | mouse_move | mouse_click | apply_patch"
+          },
+          "arguments": {
+            "type": "object",
+            "description": "工具参数，依 toolId 不同见下表"
+          }
+        }
+      },
+      "ToolReadArguments": {
+        "type": "object",
+        "description": "read 工具参数（与 OpenClaw read 一致）",
+        "properties": {
+          "path": { "type": "string", "description": "文件路径，相对工作区或绝对路径" },
+          "startLine": { "type": "integer", "minimum": 1, "description": "可选，起始行" },
+          "endLine": { "type": "integer", "minimum": 1, "description": "可选，结束行" }
+        }
+      },
+      "ToolWriteArguments": {
+        "type": "object",
+        "description": "write 工具参数（与 OpenClaw write 一致）",
+        "properties": {
+          "path": { "type": "string" },
+          "content": { "type": "string" },
+          "encoding": { "type": "string", "default": "utf-8" },
+          "overwrite": { "type": "boolean", "default": false },
+          "createParentDirs": { "type": "boolean", "default": true },
+          "baseHash": { "type": "string", "description": "可选乐观锁" }
+        }
+      },
+      "ToolEditArguments": {
+        "type": "object",
+        "description": "edit 工具参数（与 OpenClaw edit 一致）",
+        "properties": {
+          "path": { "type": "string" },
+          "edits": {
+            "type": "array",
+            "description": "range: { type, startLine, endLine, newText }; anchor: { type, oldText, newText } 或 before/after"
+          },
+          "strict": { "type": "boolean", "default": true },
+          "baseHash": { "type": "string" },
+          "encoding": { "type": "string", "default": "utf-8" }
+        }
+      },
+      "ToolExecArguments": {
+        "type": "object",
+        "description": "exec 工具参数（与 OpenClaw exec 一致）",
+        "properties": {
+          "command": { "type": "string", "description": "要执行的命令" },
+          "workdir": { "type": "string", "description": "可选工作目录" },
+          "timeout": { "type": "integer", "description": "可选超时毫秒" }
+        }
+      },
+      "ToolScreenshotArguments": {
+        "type": "object",
+        "properties": {
+          "displayId": { "type": "integer", "description": "可选显示器 ID" }
+        }
+      },
+      "ToolMouseMoveArguments": {
+        "type": "object",
+        "properties": {
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "smooth": { "type": "boolean", "default": false },
+          "displayId": { "type": "integer" }
+        }
+      },
+      "ToolMouseClickArguments": {
+        "type": "object",
+        "properties": {
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "button": { "type": "string", "enum": ["left", "right"], "default": "left" },
+          "double": { "type": "boolean", "default": false },
+          "displayId": { "type": "integer" }
+        }
+      },
+      "ToolApplyPatchArguments": {
+        "type": "object",
+        "description": "apply_patch 工具参数（与 OpenClaw apply_patch 一致，*** Begin Patch / *** End Patch 格式）",
+        "properties": {
+          "input": { "type": "string", "description": "Patch 全文，含 *** Begin Patch 与 *** End Patch 标记" }
+        }
+      },
+      "DisplayInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "显示器 ID"
+          },
+          "bounds": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              }
+            }
+          },
+          "scaleFactor": {
+            "type": "number",
+            "description": "显示器缩放因子"
+          }
+        }
+      },
+      "MousePosition": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "X 坐标"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y 坐标"
+          }
+        }
+      },
+      "MoveMouseRequest": {
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "目标 X 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "y": {
+            "type": "integer",
+            "description": "目标 Y 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "smooth": {
+            "type": "boolean",
+            "description": "是否平滑移动，默认 false。",
+            "default": false
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "显示器 ID（可选）。指定后 x/y 为该显示器内相对坐标；无效值会返回 400。"
+          }
+        }
+      },
+      "ClickMouseRequest": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "目标 X 坐标（可选）。未传 x/y 时使用当前鼠标位置。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "y": {
+            "type": "integer",
+            "description": "目标 Y 坐标（可选）。未传 x/y 时使用当前鼠标位置。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "button": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "middle"
+            ],
+            "default": "left",
+            "description": "鼠标按钮，仅支持 left/right/middle。"
+          },
+          "double": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否双击。true 时执行双击；false 时为单击。"
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "显示器 ID（可选）。指定后 x/y 为该显示器内相对坐标；无效值会返回 400。"
+          }
+        }
+      },
+      "DragMouseRequest": {
+        "type": "object",
+        "required": [
+          "startX",
+          "startY",
+          "endX",
+          "endY"
+        ],
+        "properties": {
+          "startX": {
+            "type": "integer",
+            "description": "起始 X 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "startY": {
+            "type": "integer",
+            "description": "起始 Y 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "endX": {
+            "type": "integer",
+            "description": "结束 X 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "endY": {
+            "type": "integer",
+            "description": "结束 Y 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "duration": {
+            "type": "integer",
+            "default": 100,
+            "description": "拖动持续时间（毫秒）。0 表示直接移动到目标位置。"
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "显示器 ID（可选）。指定后坐标为该显示器内相对坐标；无效值会返回 400。"
+          }
+        }
+      },
+      "ScrollMouseRequest": {
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "目标 X 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "y": {
+            "type": "integer",
+            "description": "目标 Y 坐标（必填）。若传 displayId，则为该显示器内相对坐标。"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ],
+            "default": "down",
+            "description": "滚动方向，仅支持 up/down。"
+          },
+          "amount": {
+            "type": "integer",
+            "default": 3,
+            "description": "滚动量（整数）。"
+          },
+          "displayId": {
+            "type": "integer",
+            "description": "显示器 ID（可选）。指定后 x/y 为该显示器内相对坐标；无效值会返回 400。"
+          }
+        }
+      },
+      "TerminalExecuteRequest": {
+        "type": "object",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "要执行的 Shell 命令。必须为非空字符串；同时仅允许一个命令执行。"
+          }
+        }
+      },
+      "ExecutionResult": {
+        "type": "object",
+        "properties": {
+          "exitCode": {
+            "type": "integer",
+            "description": "命令退出码"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "标准输出"
+          },
+          "stderr": {
+            "type": "string",
+            "description": "标准错误输出"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "执行耗时（毫秒）"
+          },
+          "killed": {
+            "type": "boolean",
+            "description": "是否被中断"
+          }
+        }
+      },
+      "ParsedOutput": {
+        "type": "object",
+        "properties": {
+          "raw": {
+            "type": "string",
+            "description": "原始输出"
+          },
+          "cleaned": {
+            "type": "string",
+            "description": "清理后的输出"
+          },
+          "isError": {
+            "type": "boolean",
+            "description": "是否有错误"
+          },
+          "errorType": {
+            "type": "string",
+            "description": "错误类型"
+          }
+        }
+      },
+      "TerminalExecuteErrorResponse": {
+        "type": "object",
+        "description": "终端命令执行失败时的响应，data 含 cwd 与 workspacePath 便于 AI 排查目录问题",
+        "properties": {
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "cwd": {
+                "type": "string",
+                "description": "当前 shell 工作目录（pwd），命令在该目录下执行失败"
+              },
+              "workspacePath": {
+                "type": "string",
+                "description": "当前系统工作区根目录"
+              }
+            }
+          },
+          "code": { "type": "integer", "example": 400 },
+          "message": { "type": "string", "description": "错误消息" },
+          "success": { "type": "boolean", "example": false }
+        }
+      },
+      "TerminalExecuteResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "result": {
+                "$ref": "#/components/schemas/ExecutionResult"
+              },
+              "parsed": {
+                "$ref": "#/components/schemas/ParsedOutput"
+              },
+              "cwd": {
+                "type": "string",
+                "description": "当前工作目录"
+              },
+              "workspacePath": {
+                "type": "string",
+                "description": "当前系统工作区根目录"
+              }
+            }
+          },
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "TerminalSessionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              },
+              "sessionId": {
+                "type": "string"
+              },
+              "cwd": {
+                "type": "string"
+              },
+              "isRunning": {
+                "type": "boolean"
+              },
+              "history": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "WorkspaceFilesResponse": {
+        "type": "object",
+        "properties": {
+          "currentPath": {
+            "type": "string",
+            "description": "当前目录路径（相对于工作区根目录）"
+          },
+          "files": {
+            "type": "array",
+            "description": "format=list 时返回；项为 FileInfo 或紧凑格式 { n, r, d, s?, t? }",
+            "items": {
+              "$ref": "#/components/schemas/FileInfo"
+            }
+          },
+          "tree": {
+            "type": "object",
+            "description": "format=tree 时返回；嵌套树，目录为子对象，文件为 { _: 'file', s?, t? }"
+          },
+          "treeText": {
+            "type": "string",
+            "description": "format=treeText 时返回；单段树形文本，每行缩进表示层级，最省 token"
+          }
+        }
+      },
+      "FileInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "文件或目录名称"
+          },
+          "relativePath": {
+            "type": "string",
+            "description": "相对于工作区根目录的路径（使用 '/' 作为分隔符）"
+          },
+          "isDirectory": {
+            "type": "boolean",
+            "description": "是否为目录"
+          },
+          "size": {
+            "type": "integer",
+            "description": "文件大小（字节，仅文件有此字段）"
+          },
+          "modifiedTime": {
+            "type": "integer",
+            "description": "最后修改时间（时间戳，毫秒）"
+          }
+        }
+      },
+      "TextFileResponse": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "文件名"
+          },
+          "relativePath": {
+            "type": "string",
+            "description": "相对于工作区根目录的路径（使用 '/' 作为分隔符）"
+          },
+          "fileType": {
+            "type": "string",
+            "enum": [
+              "text"
+            ],
+            "description": "文件类型"
+          },
+          "size": {
+            "type": "integer",
+            "description": "文件大小（字节）"
+          },
+          "content": {
+            "type": "string",
+            "description": "文件内容（文本）"
+          },
+          "language": {
+            "type": "string",
+            "description": "文件语言类型（用于代码高亮）"
+          },
+          "totalLines": {
+            "type": "integer",
+            "description": "文本总行数（基于完整内容）"
+          },
+          "lineEnding": {
+            "type": "string",
+            "description": "换行符类型（\\n 或 \\r\\n）"
+          },
+          "hash": {
+            "type": "string",
+            "description": "完整文本内容哈希（sha256）"
+          },
+          "contentOmitted": {
+            "type": "boolean",
+            "description": "未返回全文内容时为 true"
+          }
+        }
+      },
+      "MediaFileResponse": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "文件名"
+          },
+          "relativePath": {
+            "type": "string",
+            "description": "相对于工作区根目录的路径（使用 '/' 作为分隔符）"
+          },
+          "fileType": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio"
+            ],
+            "description": "文件类型"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME 类型"
+          },
+          "size": {
+            "type": "integer",
+            "description": "文件大小（字节）"
+          },
+          "content": {
+            "type": "string",
+            "description": "文件内容（Base64 编码的 Data URL）"
+          },
+          "language": {
+            "type": "string",
+            "description": "文件语言类型"
+          }
+        }
+      },
+      "WorkspaceSearchRequest": {
+        "type": "object",
+        "required": [
+          "pattern"
+        ],
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "正则表达式（仅支持正则匹配，不支持字面量模式）。请使用 ripgrep/ECMAScript 风格正则；反斜杠需要在 JSON 中转义（如 \\n、\\s）。**重要说明：** 1) `caseSensitive: false` 仅影响字母大小写匹配（如 `NODE_TYPE` 可匹配 `node_type`），但不会改变下划线位置或字符结构（如 `nodeTypes` 不会匹配 `node_type`）；2) 如需匹配不同命名风格（下划线 vs 驼峰），请在 pattern 中使用 `|` 包含所有变体，例如：`node_type|nodeType|NODE_TYPE|nodeTypes`；3) 使用 `|` 连接多个模式时，每个模式都会被独立匹配。"
+          },
+          "path": {
+            "type": "string",
+            "description": "搜索起始路径（相对于工作区根目录）。为空时从工作区根目录开始。禁止包含 .. 以避免路径遍历。",
+            "default": ""
+          },
+          "caseSensitive": {
+            "type": "boolean",
+            "description": "是否区分大小写。未传则默认区分大小写；传 false 等价于 ripgrep -i（仅影响字母大小写，不影响下划线位置或字符结构）。例如：`caseSensitive: false` 时，`NODE_TYPE` 可匹配 `node_type`、`Node_Type` 等，但不会匹配 `nodeType`（下划线位置不同）。如需匹配不同命名风格，请在 pattern 中包含所有变体。",
+            "default": true
+          },
+          "contextLines": {
+            "type": "integer",
+            "description": "匹配前后上下文行数。仅在 >0 时返回 before/after，上限 10。",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 10
+          },
+          "glob": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "文件 glob 过滤规则，例如 *.ts 或 src/**/test_*.ts"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "多个 glob 过滤规则，规则之间为“或”关系。"
+              }
+            ],
+            "description": "文件 glob 过滤。等价于 ripgrep -g 参数（可传多个）。"
+          },
+          "type": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "ripgrep 预置类型，例如 ts、tsx、json、rust 等"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "多个类型过滤，规则之间为“或”关系。"
+              }
+            ],
+            "description": "文件类型过滤。等价于 ripgrep -t 参数（可传多个）。"
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "最大匹配条数。服务端会限制在 1~10000 之间；超过将被截断。",
+            "default": 1000,
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "multiline": {
+            "type": "boolean",
+            "description": "是否启用多行匹配（等价于 ripgrep -U）。仅在需要跨行匹配时开启。",
+            "default": false
+          },
+          "noIgnore": {
+            "type": "boolean",
+            "description": "是否不遵守 .gitignore/.ignore（等价于 ripgrep --no-ignore）。默认 true，使搜索范围与常见编辑器不启用“使用忽略文件”时一致，避免编辑器能搜到而 API 无结果；传 false 则遵守忽略规则。",
+            "default": true
+          },
+          "lineTextMaxLength": {
+            "type": "integer",
+            "description": "单行文本最大字符数，超过则截断并加「…」；0 表示不限制。默认 400 以节省 AI token（尤其避免 minified 等超长行）。",
+            "default": 400,
+            "minimum": 0
+          },
+          "includeExecutedCommand": {
+            "type": "boolean",
+            "description": "是否在响应中包含 executedCommand；默认 false 以节省 token。",
+            "default": false
+          },
+          "compactSubmatches": {
+            "type": "boolean",
+            "description": "为 true 时 submatches 只含 matchText（不含 start/end），默认 true 以节省 token。",
+            "default": true
+          }
+        }
+      },
+      "WorkspaceWriteRequest": {
+        "type": "object",
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "文件路径（相对工作区或绝对路径）。相对路径禁止包含 ..；以 / 或 \\ 开头但非盘符/UNC 的路径会视为工作区相对路径。"
+          },
+          "content": {
+            "type": "string",
+            "description": "写入的文本内容"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8",
+            "description": "文本编码（默认 utf-8）"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "文件存在时是否覆盖"
+          },
+          "createParentDirs": {
+            "type": "boolean",
+            "default": true,
+            "description": "父目录不存在时是否自动创建"
+          },
+          "atomic": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否启用原子写入（临时文件 + rename）"
+          },
+          "baseHash": {
+            "type": "string",
+            "description": "可选的内容哈希，用于并发写入检测"
+          }
+        }
+      },
+      "WorkspaceWriteResult": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "relativePath": {
+            "type": "string"
+          },
+          "fileType": {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          "size": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "overwritten": {
+            "type": "boolean"
+          },
+          "hash": {
+            "type": "string",
+            "description": "写入后的内容哈希（sha256）"
+          },
+          "appliedEdits": {
+            "type": "integer",
+            "description": "精准编辑时成功应用的 edit 数量"
+          }
+        }
+      },
+      "WorkspaceWriteResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WorkspaceWriteResult"
+          },
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "WorkspaceEditsRequest": {
+        "type": "object",
+        "required": [
+          "path",
+          "edits"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "文件路径（相对工作区或绝对路径）。相对路径禁止包含 ..；以 / 或 \\ 开头但非盘符/UNC 的路径会视为工作区相对路径。"
+          },
+          "edits": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WorkspaceEditOperation"
+                }
+              },
+              {
+                "type": "string",
+                "description": "简易 DSL：每行一条操作，仅支持 `replace:旧内容 → 新内容` 或 `s/旧/新/g`。"
+              }
+            ]
+          },
+          "strict": {
+            "type": "boolean",
+            "default": true,
+            "description": "严格匹配模式，匹配失败直接返回错误"
+          },
+          "baseHash": {
+            "type": "string",
+            "description": "可选的内容哈希，用于并发写入检测"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8",
+            "description": "文本编码（默认 utf-8）"
+          },
+          "atomic": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否启用原子写入（临时文件 + rename）"
+          }
+        }
+      },
+      "WorkspaceEditOperation": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/WorkspaceEditRange"
+          },
+          {
+            "$ref": "#/components/schemas/WorkspaceEditAnchor"
+          }
+        ]
+      },
+      "WorkspaceEditRange": {
+        "type": "object",
+        "required": [
+          "type",
+          "startLine",
+          "endLine"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "range"
+            ]
+          },
+          "startLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "起始行号（从 1 开始）"
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "结束行号（从 1 开始）"
+          },
+          "newText": {
+            "type": "string",
+            "description": "替换内容（可为空表示删除）"
+          }
+        }
+      },
+      "WorkspaceEditAnchor": {
+        "type": "object",
+        "required": [
+          "type",
+          "oldText"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "anchor"
+            ]
+          },
+          "before": {
+            "type": "string",
+            "description": "前置锚点内容（可选）"
+          },
+          "after": {
+            "type": "string",
+            "description": "后置锚点内容（可选）"
+          },
+          "oldText": {
+            "type": "string",
+            "description": "需要替换的旧内容"
+          },
+          "newText": {
+            "type": "string",
+            "description": "替换后的新内容"
+          }
+        }
+      },
+      "WorkspaceSearchResponse": {
+        "type": "object",
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSearchMatch"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "是否因 maxResults 截断结果"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/WorkspaceSearchStats"
+          },
+          "searchRoot": {
+            "type": "string",
+            "description": "实际搜索起始路径（相对于工作区根目录）"
+          }
+        }
+      },
+      "WorkspaceSearchMatch": {
+        "type": "object",
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "相对于工作区根目录的文件路径"
+          },
+          "lineNumber": {
+            "type": "integer",
+            "description": "命中行号（从 1 开始）"
+          },
+          "lineText": {
+            "type": "string",
+            "description": "命中行文本（不包含行尾换行符）"
+          },
+          "submatches": {
+            "type": "array",
+            "description": "子匹配信息数组（可用于高亮）",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSearchSubmatch"
+            }
+          },
+          "before": {
+            "type": "array",
+            "description": "命中前的上下文行（当 contextLines > 0 时返回）",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSearchContextLine"
+            }
+          },
+          "after": {
+            "type": "array",
+            "description": "命中后的上下文行（当 contextLines > 0 时返回）",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceSearchContextLine"
+            }
+          }
+        }
+      },
+      "WorkspaceSearchSubmatch": {
+        "type": "object",
+        "properties": {
+          "matchText": {
+            "type": "string",
+            "description": "子匹配文本"
+          },
+          "start": {
+            "type": "integer",
+            "description": "子匹配起始字符偏移（基于 lineText）"
+          },
+          "end": {
+            "type": "integer",
+            "description": "子匹配结束字符偏移（基于 lineText）"
+          }
+        }
+      },
+      "WorkspaceSearchContextLine": {
+        "type": "object",
+        "properties": {
+          "lineNumber": {
+            "type": "integer",
+            "description": "上下文行号（从 1 开始）"
+          },
+          "lineText": {
+            "type": "string",
+            "description": "上下文行文本（不包含行尾换行符）"
+          }
+        }
+      },
+      "WorkspaceSearchStats": {
+        "type": "object",
+        "properties": {
+          "matchCount": {
+            "type": "integer",
+            "description": "总匹配数（未截断的真实匹配数）"
+          },
+          "fileCount": {
+            "type": "integer",
+            "description": "命中文件数量"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Display",
+      "description": "显示器信息"
+    },
+    {
+      "name": "Screenshot",
+      "description": "截图捕获"
+    },
+    {
+      "name": "Mouse",
+      "description": "鼠标控制"
+    },
+    {
+      "name": "Screen",
+      "description": "屏幕信息"
+    },
+    {
+      "name": "Terminal",
+      "description": "终端执行"
+    },
+    {
+      "name": "Workspace",
+      "description": "工作区文件操作"
+    },
+    {
+      "name": "Tools",
+      "description": "工具层统一入口（与 OpenClaw tool-catalog 约定对齐）"
+    }
+  ]
+}

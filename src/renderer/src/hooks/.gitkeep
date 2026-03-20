@@ -1,0 +1,11 @@
+# Hooks 目录
+
+此目录用于存放自定义 React Hooks
+
+## 规划的 Hooks
+
+- useScreenshot.ts - 截图相关逻辑
+- useDrawing.ts - 绘制相关逻辑
+- useKeyboard.ts - 键盘事件处理
+- etc.
+

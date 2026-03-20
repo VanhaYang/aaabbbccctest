@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-electron
+*.local
+.DS_Store
+.vscode
+.idea
+*.log
+
+out/
+release/

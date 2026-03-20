@@ -1,0 +1,12 @@
+# 组件目录
+
+此目录用于存放 React 组件
+
+## 规划的组件
+
+- Canvas.tsx - 画布组件
+- Toolbar.tsx - 工具栏组件
+- Editor.tsx - 编辑器组件
+- ColorPicker.tsx - 颜色选择器
+- etc.
+
